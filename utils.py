@@ -4,17 +4,6 @@ import time
 import os
 
 
-__all__ = (
-    "installed_programs",
-    "ip_address",
-    "rdp",
-    "os_battery_and_time",
-    "ms_defender_status",
-    "empty_dirs",
-    "languages_list"
-)
-
-
 def installed_programs():
     out = str(subprocess.check_output('wmic product get name', shell=True))
 
@@ -111,3 +100,13 @@ def languages_list():
     out = [i.strip().split(":")[-1] for i in out.replace('\\r', '').split('\\n') if len(i) > 2 and "EnglishName" in i]
 
     return out
+
+
+def mac():
+    out = subprocess.check_output("getmac", shell=True)
+    return out.decode()
+
+
+def hostname():
+    out = subprocess.check_output("hostname", shell=True)
+    return out.decode()
