@@ -4,6 +4,19 @@ import time
 import os
 
 
+__all__ = (
+    "installed_programs",
+    "ip_address",
+    "rdp",
+    "os_battery_and_time",
+    "ms_defender_status",
+    "empty_dirs",
+    "languages_list",
+    "mac",
+    "hostname"
+)
+
+
 def installed_programs():
     out = str(subprocess.check_output('wmic product get name', shell=True))
 
@@ -15,9 +28,10 @@ def installed_programs():
 
 def ip_address():
     # get ip from hostname
+    # echo ls %USERDNSDOMAIN%|nslookup
     ip = socket.gethostbyname(socket.gethostname())
 
-    return f"Ip: {ip}"
+    return [f"Ip: {ip}"]
 
 
 def rdp():
@@ -34,13 +48,13 @@ def rdp():
     for i in out:
         if "fDenyTSConnections" in i:
             rdp_option = int(i[-1])
-            print(f"\n{i}")
+            # print(f"\n{i}")
             break
 
     if rdp_option == 1:
-        return "Remote Desktop Protocol is Disabled"
+        return [f"fDenyTSConnections{rdp_option}\nRemote Desktop Protocol is Disabled"]
     else:
-        return "Remote Desktop Protocol is Enabled"
+        return [f"fDenyTSConnections{rdp_option}\nRemote Desktop Protocol is Enabled"]
 
 
 def os_battery_and_time():
@@ -53,14 +67,14 @@ def os_battery_and_time():
         .replace('\\r', '')\
         .replace('\\n', '').strip()
 
-    return f"Time: {tm.tm_hour}:{tm.tm_min}\nBattery:{battery[26:30]}%"
+    return [f"Time: {tm.tm_hour}:{tm.tm_min}\nBattery:{battery[26:30]}%"]
 
 
 def ms_defender_status():
     # Get-MpComputerStatus
     out = str(subprocess.check_output("powershell.exe Get-MpComputerStatus", shell=True))
     # filter and split the result
-    out = [i.strip() for i in out.replace('\\r', '').split('\\n') if len(i) > 2]
+    out = [i.strip() for i in out.replace('\\r', '').split('\\n') if len(i) > 2 and ("True" in i or "False" in i)]
 
     return out
 
@@ -103,10 +117,11 @@ def languages_list():
 
 
 def mac():
-    out = subprocess.check_output("getmac", shell=True)
-    return out.decode()
+    out = str(subprocess.check_output("getmac", shell=True))
+    out = [i.strip() for i in out.replace('\\r', '').replace("=", "").split('\\n') if len(i) > 2]
+    return out
 
 
 def hostname():
     out = subprocess.check_output("hostname", shell=True)
-    return out.decode()
+    return [out.decode()]
