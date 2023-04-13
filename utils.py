@@ -16,16 +16,21 @@ __all__ = (
     "hostname"
 )
 
+# global variables for searching empty dirs
+START_DIR = "C:\\"
+LS_EMPTY_DIRS = []
 
+
+# list all installed programs in OS
 def installed_programs():
     out = str(subprocess.check_output('wmic product get name', shell=True))
 
     # filter, validate and split the result
     out = [f"{index + 1}. {i.strip()}" for index, i in enumerate(out.replace('\\r', '').split('\\n')) if len(i) > 2][1:]
-
     return out
 
 
+# print OS ip address
 def ip_address():
     # get ip from hostname
     # echo ls %USERDNSDOMAIN%|nslookup
@@ -34,9 +39,9 @@ def ip_address():
     return [f"Ip: {ip}"]
 
 
+# check RDP for on/off
 def rdp():
-    # https://learn.microsoft.com/en-us/windows-server/remote/remote-desktop-services/troubleshoot/rdp-error-general-troubleshooting
-    # fDenyTSConnections
+    # get registry params in 'Terminal Server'
     command = "Get-ItemProperty hklm:\\System\\CurrentControlSet\\Control\\'Terminal Server'"
     out = str(subprocess.check_output(f"powershell.exe {command}", shell=True))
 
@@ -45,10 +50,10 @@ def rdp():
 
     rdp_option = None
 
+    # find fDenyTSConnections param
     for i in out:
         if "fDenyTSConnections" in i:
             rdp_option = int(i[-1])
-            # print(f"\n{i}")
             break
 
     if rdp_option == 1:
@@ -57,6 +62,7 @@ def rdp():
         return [f"fDenyTSConnections{rdp_option}\nRemote Desktop Protocol is Enabled"]
 
 
+# print battery percentage and current time
 def os_battery_and_time():
     # wmic os get LocalDateTime /value
     seconds = time.time()
@@ -70,6 +76,7 @@ def os_battery_and_time():
     return [f"Time: {tm.tm_hour}:{tm.tm_min}\nBattery:{battery[26:30]}%"]
 
 
+# print Microsoft Defender status
 def ms_defender_status():
     # Get-MpComputerStatus
     out = str(subprocess.check_output("powershell.exe Get-MpComputerStatus", shell=True))
@@ -79,12 +86,9 @@ def ms_defender_status():
     return out
 
 
-START_DIR = "C:\\"
-LS_EMPTY_DIRS = []
-
-
-def search_empty_dirs(new_dir=START_DIR):
-    # check for dirs
+# recursive function for searching empty dirs
+def search_empty_dirs(new_dir):
+    # check new_dir is file or dir
     try:
         ls = os.listdir(new_dir)
     except:
@@ -100,13 +104,15 @@ def search_empty_dirs(new_dir=START_DIR):
         search_empty_dirs(new_dir="\\".join([new_dir, ls_dir]))
 
 
+# main function for searching empty dirs
 def empty_dirs():
     # run search
-    search_empty_dirs()
+    search_empty_dirs(START_DIR)
 
     return LS_EMPTY_DIRS
 
 
+# list all keyboard layout languages
 def languages_list():
     # Get-WinUserLanguageList
     out = str(subprocess.check_output("powershell.exe Get-WinUserLanguageList", shell=True))
@@ -116,12 +122,14 @@ def languages_list():
     return out
 
 
+# list device mac addresses
 def mac():
     out = str(subprocess.check_output("getmac", shell=True))
     out = [i.strip() for i in out.replace('\\r', '').replace("=", "").split('\\n') if len(i) > 2]
     return out
 
 
+# print OS hostname
 def hostname():
     out = subprocess.check_output("hostname", shell=True)
     return [out.decode()]
