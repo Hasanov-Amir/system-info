@@ -1,14 +1,23 @@
 // list of all buttons
 const buttons = document.querySelectorAll('button');
+// start dir input
+const inputdiv = document.getElementById("start");
+// start input
+const input = document.getElementById("dir");
 // getting domain name
 const domain = window.location.href;
-
+console.log(inputdiv)
 
 // listening for click on buttons
 buttons.forEach(button => {
     button.addEventListener('click', () => {
         // run function for getting util response
-        GetResponse(button.id);
+        if (button.id === "empty_dirs") {
+            inputdiv.style.visibility = 'visible';
+            checkInput(button.id);
+        } else {
+            GetResponse(button.id);
+        }
     });
 });
 
@@ -30,4 +39,11 @@ function GetResponse (name) {
         .catch(error => {
             console.log(error);
         });
+}
+
+
+function checkInput(button) {
+    if (input.value) {
+        GetResponse(button)
+    }
 }

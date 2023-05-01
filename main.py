@@ -1,3 +1,5 @@
+import os
+
 import argparse
 
 import utils
@@ -24,6 +26,21 @@ parser.add_argument("-r", "--rdp", action='store_true', help="check RDP turned o
 args = parser.parse_args()
 
 
+def run(params):
+    # setting start dir for empty dirs search
+    utils.START_DIR = args.start
+
+    # for non argument code run
+    if len(params) == 0:
+        parser.print_help()
+
+    # output per line
+    for param in params:
+        result = eval(f"utils.{param}()")
+        for line in result:
+            print(line)
+
+
 if __name__ == '__main__':
     # getting arguments in python dict format
     d = vars(args)
@@ -33,21 +50,13 @@ if __name__ == '__main__':
         try:
             from webui import app
             app.run(host='localhost', port=args.port, debug=False)
-        except:
+        except ImportError:
             print("Please install Flask to run webui")
     else:
         # getting only True arguments from utils
         vals = [i for i in d if d[i] is True and i in utils.__all__]
 
-        # setting start dir for empty dirs search
-        utils.START_DIR = args.start
-
-        # for non argument code run
-        if len(vals) == 0:
-            parser.print_help()
-
-        # output per line
-        for param in vals:
-            result = eval(f"utils.{param}()")
-            for line in result:
-                print(line)
+        try:
+            run(vals)
+        except KeyboardInterrupt:
+            print(f"Program was stopped by {os.getenv('username')}")

@@ -1,5 +1,4 @@
-from flask import Flask
-from flask import render_template
+from flask import Flask, request, render_template
 
 import utils
 
@@ -27,3 +26,24 @@ def get_util(name):
     }
 
     return response  # JSON
+
+
+@app.route("/start-dir", methods=['POST', 'GET'])
+def start_dir():
+    if request.method == "POST":
+        ctx = request.get_json()
+        start = ctx.get("start", None)
+        utils.START_DIR = start
+        return {"response": f"Start dir was set to {utils.START_DIR}"}
+
+    if param := request.query_string:
+        param = param.decode().split("=")
+        params = {
+            param[0]: int(param[1])
+        }
+
+        if params.get("erase", False):
+            utils.START_DIR = "C:\\"
+            return {"response": f"start dir was set to {utils.START_DIR}"}
+
+    return {"response": utils.START_DIR}
